@@ -17,6 +17,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.querydsl.dto.MemberDto;
 import study.querydsl.dto.QMemberDto;
@@ -794,4 +796,72 @@ public class QuerydslBasicTest {
      * --------- 동적쿼리 부분 끝 ----------
      */
 
+    @Test
+    @DisplayName("벌크 연산(문제점 존재)")
+    @Commit
+    public void bulkUpdate() {
+        // given
+
+        //영속성은 바뀌지 않음 벌크 연산의 문제점 설렉트 쿼리는 나가는데 1차 캐시가 우선이므로 설렉트로 가져온 데이터를 버림
+        //member1 = 10 > DB 비회원
+        //member2 = 20 > DB 비회원
+        //member3 = 30 > DB member3
+        //member4 = 40 > DB member4
+
+        // when
+        long cnt = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+
+        em.flush();
+        em.clear();     //초기화하면 정상 작동
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        // then
+        for (Member member1 : result) {
+            System.out.println("member1 = " + member1);
+        }
+    }
+
+    @Test
+    @DisplayName("모든 회원의 나이를 1 올리기")
+    public void bulkAdd() {
+        // given
+
+        // when
+        long cnt = queryFactory
+                .update(member)
+                .set(member.age, member.age.add(1))         //빼고 샆으면 -1을 함 곱하기는 멀티플라이
+                .execute();
+        // then
+        assertThat(cnt).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("삭제 연산")
+    public void bulkDelete() {
+        // given
+
+        // when
+        long cnt = queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
+        // then
+
+        assertThat(cnt).isEqualTo(3);
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        for (Member member1 : result) {
+            System.out.println("member1 = " + member1);
+        }
+    }
 }
