@@ -1,7 +1,6 @@
 package study.querydsl.repository;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.stereotype.Repository;
@@ -14,7 +13,6 @@ import study.querydsl.entity.Member;
 import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
-import java.util.StringTokenizer;
 
 import static study.querydsl.entity.QMember.*;
 import static study.querydsl.entity.QTeam.*;

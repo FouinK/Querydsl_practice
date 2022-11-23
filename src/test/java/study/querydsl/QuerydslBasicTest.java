@@ -238,7 +238,7 @@ public class QuerydslBasicTest {
     public void join() {
         List<Member> result = queryFactory
                 .selectFrom(member)
-                .join(member.team, team)            //leftJoin, rightJoin 가능
+                .join(member.team, team)           //leftJoin, rightJoin 가능
                 .where(team.name.eq("teamA"))
                 .fetch();
 
@@ -740,7 +740,7 @@ public class QuerydslBasicTest {
 
     private List<Member> searchMember1(String usernameCond, Integer ageCond) {
 
-        BooleanBuilder builder = new BooleanBuilder();          //초기에 넣을 수도 있음
+        BooleanBuilder builder = new BooleanBuilder(/*member.username.eq(usernameCond)*/);          //초기에 넣을 수도 있음
         if (usernameCond != null) {
             builder.and(member.username.eq(usernameCond));
         }
@@ -774,9 +774,8 @@ public class QuerydslBasicTest {
         return queryFactory
                 .selectFrom(member)
                 .where(usernameEq(usernameCond), ageEq(ageCond))
-//                .where(allEq(usernameCond, ageCond))                  //null 처리 필요
+//                .where(allEq(usernameCond, ageCond))                  //한번에 처리
                 .fetch();
-
     }
 
     private BooleanExpression usernameEq(String usernameCond) {
